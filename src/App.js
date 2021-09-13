@@ -1,23 +1,56 @@
 import React from "react"; 
+import axios from "axios";
+import Movie from "./Movie";
+import "./App.css";
+
 class App extends React.Component{
   state = {
     isLoading : true,
     movie: []
   };
 
-  componentDidMount(){ //delay 함수
-    setTimeout(()=> {
-      this.setState({isLoading : false});
-    }, 3000); //6초뒤에 실행
-  }
-  
-
-  render(){
-    const { isLoading } = this.state;
-    return <div>{isLoading ? "로딩":"준비됨"}</div>
-  }
+  getMovies = async () => { 
     
+    const {data : {
+      data : {movies}
+    }
+  } = await axios.get("https://yts-proxy.now.sh/list_movies.json?sort_by=rating");
+    this.setState({movies, isLoading : false}) 
   
-}
+  }
 
+  componentDidMount(){ 
+    this.getMovies();
+  }
+
+  render()
+  {
+
+    const { isLoading, movies } = this.state; 
+
+    return (
+      <section className="container">
+                {isLoading ? (
+                  <div className="loader">
+                  <span className="loader_text">Loading...</span>
+                  </div>
+                ) : (
+                    <div className="movies">
+                        {movies.map(movie => {
+                          return (
+                            <Movie 
+                          key={movie.id}
+                          id={movie.id}
+                          year={movie.year} 
+                          title={movie.title} 
+                          summary={movie.summary} 
+                          poster={movie.medium_cover_image}
+                          genres={movie.genres} />
+                          )
+                          
+                        })}
+                  </div>
+              )}
+       </section>
+    )}}
 export default App;
